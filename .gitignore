@@ -135,6 +135,5 @@ $RECYCLE.BIN/
 _NCrunch*
 
 
-appsettings.*
 /ListaContatos/appsettings.Development.json
 /ListaContatos/appsettings.json
