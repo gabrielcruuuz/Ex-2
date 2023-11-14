@@ -136,3 +136,5 @@ _NCrunch*
 
 
 appsettings.*
+/ListaContatos/appsettings.Development.json
+/ListaContatos/appsettings.json
