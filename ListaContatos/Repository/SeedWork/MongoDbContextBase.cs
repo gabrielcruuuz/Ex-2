@@ -11,7 +11,7 @@ namespace ListaContatos.Repository.SeedWork
 
         public MongoDbContextBase(IConfiguration configuration)
         {
-            string conexao = Environment.GetEnvironmentVariable("DATABASE_URL");
+            string conexao = configuration["DATABASE_URL"];
 
             var settings = MongoClientSettings.FromUrl(new MongoUrl(conexao));
 
