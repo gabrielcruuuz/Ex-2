@@ -1,47 +1,45 @@
 trigger:
-  branches:
-    include:
-      - main  # Substitua pelo nome do seu branch principal
-
+  - main
+ 
 pool:
-  vmImage: 'windows-latest'  # Escolha a imagem do sistema operacional desejada
-
+  name: Azure Pipelines
+  vmImage: 'windows-latest'
+ 
 variables:
-  solution: '**/*.sln'  # Caminho para o arquivo de solução .NET
   buildConfiguration: 'Release'
+ 
+steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET Core 6'
+  inputs:
+    version: 6.0.x
+ 
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
+    projects: '**/*.csproj'
+ 
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    projects: '**/*.csproj'
 
-stages:
-- stage: Build
-  displayName: 'Build Stage'
-  jobs:
-  - job: 'BuildJob'
-    displayName: 'Build'
-    steps:
-    - task: UseDotNet@2
-      inputs:
-        packageType: 'sdk'
-        version: '6.0.x'  # Versão do SDK .NET a ser utilizada
-        includePreviewVersions: true
+- task: DotNetCoreCLI@2
+  displayName: Tests
+  inputs:
+    command: 'test'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore Packages'
-      inputs:
-        command: 'restore'
-        projects: '**/*.csproj'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Build Project'
-      inputs:
-        command: 'build'
-        projects: '**/*.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)'
-
-    - task: DotNetCoreCLI@2
-      displayName: 'Run Tests'
-      inputs:
-        command: 'test'
-        projects: '**/*Test/*.csproj'
-        arguments: '--configuration Release --collect "Code coverage"'
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: '**/*.csproj'
+    arguments: '--configuration release --output $(build.artifactstagingdirectory) /property:PublishWithAspNetCoreTargetManifest=false'
+    zipAfterPublish: false
         
 
 # - stage: Deploy
