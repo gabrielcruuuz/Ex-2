@@ -1,16 +1,57 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+trigger:
+  branches:
+    include:
+      - main  # Substitua pelo nome do seu branch principal
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'windows-latest'  # Escolha a imagem do sistema operacional desejada
 
-steps:
-- script: echo $(texto)
-  displayName: 'Run a one-line script'
+variables:
+  solution: '**/*.sln'  # Caminho para o arquivo de solução .NET
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+stages:
+- stage: Build
+  displayName: 'Build Stage'
+  jobs:
+  - job: 'BuildJob'
+    displayName: 'Build'
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '6.0.x'  # Versão do SDK .NET a ser utilizada
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore Packages'
+      inputs:
+        command: 'restore'
+        projects: '$(solution)'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build Project'
+      inputs:
+        command: 'build'
+        projects: '$(solution)'
+        arguments: '--configuration Release'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Run Tests'
+      inputs:
+        command: 'test'
+        projects: '**/*Test/*.csproj'
+        arguments: '--configuration Release --collect "Code coverage"'
+
+- stage: Deploy
+  displayName: 'Deployment Stage'
+  dependsOn: Build
+  jobs:
+  - job: 'DeployJob'
+    displayName: 'Deploy to Azure App Service'
+    steps:
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
+        appType: 'webApp'
+        WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
+        packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'  # Caminho para o artefato ZIP gerado durante o build
