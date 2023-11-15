@@ -40,7 +40,7 @@ stages:
       displayName: 'Run Tests'
       inputs:
         command: 'test'
-        projects: '**/*Tests/*.csproj'
+        projects: '**/*Test/*.csproj'
         arguments: '--configuration Release --collect "Code coverage"'
         
 
