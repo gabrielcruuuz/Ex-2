@@ -8,56 +8,69 @@ pool:
 variables:
   buildConfiguration: 'Release'
  
-steps:
-- task: UseDotNet@2
-  displayName: 'Use .NET Core 6'
-  inputs:
-    version: 6.0.x
+stages:
+- stage: BuildAndTest
+  displayName: 'Build and Test'
+  jobs:
+  - job: 'BuildTestJob'
+    displayName: 'Build, Test and Publish'
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core 6'
+      inputs:
+        version: 6.0.x
  
-- task: DotNetCoreCLI@2
-  displayName: Restore
-  inputs:
-    command: restore
-    projects: '**/*.csproj'
+    - task: DotNetCoreCLI@2
+      displayName: Restore
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
  
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    projects: '**/*.csproj'
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
 
-- task: DotNetCoreCLI@2
-  displayName: Tests
-  inputs:
-    command: 'test'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
+    - task: DotNetCoreCLI@2
+      displayName: Tests
+      inputs:
+        command: 'test'
+        projects: '**/*.Test.csproj'
+        arguments: '--configuration $(buildConfiguration) --collect "Code coverage"'
+ 
+    - task: DotNetCoreCLI@2
+      displayName: Publish
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: '**/ListaContatos.csproj'
+        arguments: '--configuration release --output $(build.artifactstagingdirectory) /property:PublishWithAspNetCoreTargetManifest=false'
+        zipAfterPublish: true
 
-- task: DotNetCoreCLI@2
-  displayName: Publish
-  inputs:
-    command: publish
-    publishWebProjects: false
-    projects: '**/ListaContatos.csproj'
-    arguments: '--configuration release --output $(build.artifactstagingdirectory) /property:PublishWithAspNetCoreTargetManifest=false'
-    zipAfterPublish: true
+- stage: Deploy
+  displayName: 'Deployment Stage'
+  dependsOn: BuildAndTest
+  jobs:
+  - job: 'DeployJob'
+    displayName: 'Deploy to Azure App Service'
+    steps:
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact'
+      inputs:
+        ArtifactName: myproject
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
-  inputs:
-    ArtifactName: myproject
-        
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'myproject'
+        downloadPath: '$(build.artifactstagingdirectory)'
 
-- task: DownloadBuildArtifacts@0
-  inputs:
-    buildType: 'current'
-    downloadType: 'single'
-    artifactName: 'myproject'
-    downloadPath: '$(build.artifactstagingdirectory)'
-
-- task: AzureRmWebAppDeployment@4
-  inputs:
-    ConnectionType: 'AzureRM'
-    azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
-    appType: 'webApp'
-    WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
-    packageForLinux: '$(build.artifactstagingdirectory)/**/ListaContatos.zip'  # Caminho para o artefato ZIP gerado durante o build
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
+        appType: 'webApp'
+        WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
+        packageForLinux: '$(build.artifactstagingdirectory)/**/ListaContatos.zip'  # Caminho para o artefato ZIP gerado durante o build
