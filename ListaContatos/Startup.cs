@@ -32,6 +32,7 @@ namespace ListaContatos
                     });
             });
 
+
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             DependencyInjection.ConfigureDependenciesService(services);
