@@ -39,7 +39,7 @@ steps:
     publishWebProjects: false
     projects: '**/*.csproj'
     arguments: '--configuration release --output $(build.artifactstagingdirectory) /property:PublishWithAspNetCoreTargetManifest=false'
-    zipAfterPublish: false
+    zipAfterPublish: true
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact'
@@ -47,24 +47,17 @@ steps:
     ArtifactName: myproject
         
 
-# - stage: Deploy
-#   displayName: 'Deployment Stage'
-#   dependsOn: Build
-#   jobs:
-#   - job: 'DeployJob'
-#     displayName: 'Deploy to Azure App Service'
-#     steps:
-#     - task: DownloadBuildArtifacts@0
-#       inputs:
-#         buildType: 'current'
-#         downloadType: 'single'
-#         artifactName: 'drop'
-#         downloadPath: '$(Build.ArtifactStagingDirectory)'
+- task: DownloadBuildArtifacts@0
+  inputs:
+    buildType: 'current'
+    downloadType: 'single'
+    artifactName: 'myproject'
+    downloadPath: '$(build.artifactstagingdirectory)'
 
-#     - task: AzureRmWebAppDeployment@4
-#       inputs:
-#         ConnectionType: 'AzureRM'
-#         azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
-#         appType: 'webApp'
-#         WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
-#         packageForLinux: '$(Build.ArtifactStagingDirectory)/**/*.zip'  # Caminho para o artefato ZIP gerado durante o build
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
+    appType: 'webApp'
+    WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
+    packageForLinux: '$(build.artifactstagingdirectory)/**/*.zip'  # Caminho para o artefato ZIP gerado durante o build
