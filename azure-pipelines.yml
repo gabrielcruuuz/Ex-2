@@ -1,87 +1,43 @@
-trigger:
-- main
-     
-pool:
-  name: Azure Pipelines
-  vmImage: 'ubuntu-latest'
- 
-variables:
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
-  solution: '**/*.sln'
-  project: '**/ListaContatos.csproj'  
- 
-stages:
-- stage: BuildAndTest
-  displayName: 'Build and Test'
-  jobs:
-  - job: 'BuildTestJob'
-    displayName: 'Build and Test'
-    steps:
-    - task: UseDotNet@2
-      displayName: 'Use .NET Core 6'
-      inputs:
-        version: 6.0.x
-        includePreviewVersions: true
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
+    projects: '**/*.csproj'
 
-    - task: NuGetToolInstaller@1
- 
-    - task: DotNetCoreCLI@2
-      displayName: Restore
-      inputs:
-        command: restore
-        projects: '**/*.csproj'
- 
-    - task: DotNetCoreCLI@2
-      displayName: Build
-      inputs:
-        command: 'build'
-        projects: '**/*.csproj'
-        arguments: '--configuration $(buildConfiguration)'
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    projects: '**/*.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
 
-    - task: DotNetCoreCLI@2
-      displayName: Tests
-      inputs:
-        command: 'test'
-        projects: '**/*.Test.csproj'
-        arguments: --configuration $(buildConfiguration)
+- task: DotNetCoreCLI@2
+  displayName: Test
+  inputs:
+    command: test
+    projects: '**/*.Test.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
 
-    - task: DotNetCoreCLI@2
-      displayName: Publish
-      inputs:
-        command: publish
-        publishWebProjects: true
-        projects: '**/*.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)'
-        zipAfterPublish: false
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    publishWebProjects: false
+    projects: '**/*.csproj'
+    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+    zipAfterPublish: True
+    modifyOutputPath: false
 
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact'
-      inputs:
-        PathtoPublish: $(build.artifactstagingdirectory)
-        ArtifactName: artefato
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+  condition: succeededOrFailed()
 
-- stage: Deploy
-  displayName: 'Deployment Stage'
-  dependsOn: BuildAndTest
-  jobs:
-  - job: 'DeployJob'
-    displayName: 'Deploy to Azure App Service'
-    steps:
-    - task: DownloadBuildArtifacts@0
-      inputs:
-        buildType: 'current'
-        downloadType: 'single'
-        artifactName: 'artefato'
-        downloadPath: '$(Build.ArtifactStagingDirectory)'
 
-    - task: AzureRmWebAppDeployment@4
-      displayName: 'Deploy Azure App Service'
-      inputs:
-        ConnectionType: 'AzureRM'
-        azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
-        appType: 'webApp'
-        WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
-        packageForLinux: '$(Build.ArtifactStagingDirectory)/**/ListaContatos'
-
-        # '$(Build.ArtifactStagingDirectory)/**/*.zip'
+- task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy Azure App Service'
+  inputs:
+    azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
+    appType: 'webApp'
+    WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
