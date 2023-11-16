@@ -82,4 +82,4 @@ stages:
         azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
         appType: 'webApp'
         WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
-        packageForLinux: '$(Build.ArtifactStagingDirectory)/**/ListaContatos'
+        packageForLinux: '$(Build.ArtifactStagingDirectory)/**/**/ListaContatos.dll'
