@@ -52,7 +52,7 @@ stages:
         command: publish
         publishWebProjects: true
         projects: '**/*.csproj'
-        arguments: '--configuration $(buildConfiguration) --output $(build.artifactstagingdirectory)'
+        arguments: '--configuration $(buildConfiguration)'
         zipAfterPublish: false
 
     - task: PublishBuildArtifacts@1
@@ -83,5 +83,3 @@ stages:
         appType: 'webApp'
         WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
         packageForLinux: '$(Build.ArtifactStagingDirectory)/**/ListaContatos'
-
-        # '$(Build.ArtifactStagingDirectory)/**/*.zip'
