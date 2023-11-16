@@ -61,25 +61,27 @@ stages:
         PathtoPublish: $(build.artifactstagingdirectory)
         ArtifactName: artefato
 
-# - stage: Deploy
-#   displayName: 'Deployment Stage'
-#   dependsOn: BuildAndTest
-#   jobs:
-#   - job: 'DeployJob'
-#     displayName: 'Deploy to Azure App Service'
-#     steps:
-#     - task: DownloadBuildArtifacts@0
-#       inputs:
-#         buildType: 'current'
-#         downloadType: 'single'
-#         artifactName: 'myproject'
-#         downloadPath: '$(Build.ArtifactStagingDirectory)'
+- stage: Deploy
+  displayName: 'Deployment Stage'
+  dependsOn: BuildAndTest
+  jobs:
+  - job: 'DeployJob'
+    displayName: 'Deploy to Azure App Service'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'artefato'
+        downloadPath: '$(Build.ArtifactStagingDirectory)'
 
-#     - task: AzureRmWebAppDeployment@4
-#       displayName: 'Deploy Azure App Service'
-#       inputs:
-#         ConnectionType: 'AzureRM'
-#         azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
-#         appType: 'webApp'
-#         WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
-#         packageForLinux: '$(System.DefaultWorkingDirectory)/artefato/drop/ListaContatos'
+    - task: AzureRmWebAppDeployment@4
+      displayName: 'Deploy Azure App Service'
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Pago pelo Uso(c003d420-89ca-42f5-91aa-69ed530214fd)'  # Substitua pelo nome da sua assinatura no Azure
+        appType: 'webApp'
+        WebAppName: 'ListaContatos-api'  # Substitua pelo nome do seu App Service no Azure
+        packageForLinux: '$(Build.ArtifactStagingDirectory)/**/ListaContatos'
+
+        # '$(Build.ArtifactStagingDirectory)/**/*.zip'
