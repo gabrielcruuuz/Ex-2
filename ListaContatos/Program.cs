@@ -20,7 +20,7 @@ namespace ListaContatos
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    config.AddJsonFile("appsettings.json")
+                    config.AddJsonFile("appsettings.json", true)
                     .AddEnvironmentVariables();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
