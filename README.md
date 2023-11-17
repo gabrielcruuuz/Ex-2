@@ -1,5 +1,5 @@
-Back-End
+Back-End for Contact List
 
-Optei pelo uso do MongoDB por existir uma plataforma gratuita (Mongo Atlas)
+Using mongoDB (mongoAtlas)
 
-deploy feito na azure > https://listacontatos20221216155214.azurewebsites.net/index.html
+Deployed on Azure > listacontatosapi.azurewebsites.net
